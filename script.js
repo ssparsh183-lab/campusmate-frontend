@@ -15,10 +15,14 @@ document.addEventListener("DOMContentLoaded", () => {
 // ---------------- MEMORY ----------------
 
 function loadMemory() {
+
     fetch(`${BASE_URL}/memory/1`)
         .then(res => res.json())
         .then(data => {
+
             if (!data.error) {
+
+                // ✅ Memory section
                 document.getElementById("memory-hostel").innerText =
                     data.hostel || "N/A";
 
@@ -27,9 +31,25 @@ function loadMemory() {
 
                 document.getElementById("memory-destination").innerText =
                     data.recent_destination || "No recent location";
+
+                // ✅ Navigation card dynamic
+                const navText = data.recent_destination
+                    ? `Last visited: ${data.recent_destination}`
+                    : "No recent navigation history.";
+                document.getElementById("nav-card-text").innerText = navText;
+
+                // ✅ Complaint card dynamic
+                const complaintText = data.last_complaint
+                    ? `Last issue: ${data.last_complaint}`
+                    : "No complaints filed yet.";
+                document.getElementById("complaint-card-text").innerText = complaintText;
+
+                // ✅ Briefing card dynamic
+                document.getElementById("briefing-card-text").innerText =
+                    "Tap to get today's full campus summary.";
             }
         })
-        .catch(err => console.error("Memory error:", err));
+        .catch(err => console.error("Memory load error:", err));
 }
 
 
