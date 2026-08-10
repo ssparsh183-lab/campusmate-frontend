@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,141 +9,95 @@
 
 <body>
 
-    <!-- Header -->
-    <header>
-        <div class="logo">
-            🎓 CampusMate
+<header>
+    <div class="logo">🎓 CampusMate</div>
+    <div class="status">
+        <span class="dot"></span>AI Online
+    </div>
+</header>
+
+<main>
+
+<section class="hero">
+    <p class="tag">CONTEXT-AWARE VOICE CAMPUS OS</p>
+    <h1>Your Campus.<br><span>Your AI Assistant.</span></h1>
+    <p class="subtitle">
+        Navigate your campus, track complaints and get your personalized daily briefing.
+    </p>
+
+    <button class="mic-button" onclick="startListening()"></button>
+    <p id="voice-status">Tap to speak</p>
+</section>
+
+<section class="query-box">
+    <input type="text" id="userInput" placeholder="Ask CampusMate anything...">
+    <button onclick="processQuery()">Send</button>
+</section>
+
+<section class="response-card" id="responseCard">
+    <div class="response-header">
+        <span>🤖 CampusMate</span>
+        <span class="ai-badge">AI RESPONSE</span>
+    </div>
+
+    <p id="responseText">
+        Hello! I can help you navigate the campus, manage complaints and give you your daily briefing.
+    </p>
+</section>
+
+<section class="features">
+
+    <div class="feature-card" onclick="showNavigation()">
+        <div class="icon">🧭</div>
+        <h3>Smart Navigation</h3>
+        <p>Get directions using your campus locations and remembered destinations.</p>
+        <button>Try Navigation →</button>
+    </div>
+
+    <div class="feature-card" onclick="showComplaint()">
+        <div class="icon">📝</div>
+        <h3>Complaint Workflow</h3>
+        <p>Report campus problems and track your complaint even later.</p>
+        <button>Report Problem →</button>
+    </div>
+
+    <div class="feature-card" onclick="showBriefing()">
+        <div class="icon">🌅</div>
+        <h3>Daily Briefing</h3>
+        <p>Get your classes, notices, complaints and mess information in one summary.</p>
+        <button>Good Morning →</button>
+    </div>
+
+</section>
+
+<!-- ✅ Dynamic Memory -->
+<section class="memory-section">
+    <div class="memory-title">🧠 CampusMate Memory</div>
+
+    <div class="memory-items">
+        <div>
+            <span>Hostel</span>
+            <strong id="memory-hostel">Loading...</strong>
         </div>
-        <div class="status">
-            <span class="dot"></span>AI Online
+
+        <div>
+            <span>Last Complaint</span>
+            <strong id="memory-complaint">Loading...</strong>
         </div>
-    </header>
 
-    <!-- Main -->
-    <main>
+        <div>
+            <span>Recent Destination</span>
+            <strong id="memory-destination">Loading...</strong>
+        </div>
+    </div>
+</section>
 
-        <section class="hero">
-            <p class="tag">CONTEXT-AWARE VOICE CAMPUS OS</p>
-            <h1>Your Campus.<br><span>Your AI Assistant.</span></h1>
-            <p class="subtitle">
-                Navigate your campus, track complaints and get your personalized
-                daily briefing.
-            </p>
+</main>
 
-            <!-- Voice Button -->
-            <button class="mic-button" onclick="startListening()">
-                
-            </button>
+<footer>
+    CampusMate © 2026 | Context-Aware Voice Campus OS
+</footer>
 
-            <p id="voice-status">Tap to speak</p>
-        </section>
-
-
-        <!-- User Query -->
-        <section class="query-box">
-            <input
-                type="text"
-                id="userInput"
-                placeholder="Ask CampusMate anything..."
-            >
-            <button onclick="processQuery()">Send</button>
-        </section>
-
-
-        <!-- Response -->
-        <section class="response-card" id="responseCard">
-
-            <div class="response-header">
-                <span>🤖 CampusMate</span>
-                <span class="ai-badge">AI RESPONSE</span>
-            </div>
-
-            <p id="responseText">
-                Hello! I can help you navigate the campus,
-                manage complaints and give you your daily briefing.
-            </p>
-
-        </section>
-
-
-        <!-- Features -->
-        <section class="features">
-
-            <!-- Navigation -->
-            <div class="feature-card" onclick="showNavigation()">
-                <div class="icon">🧭</div>
-                <h3>Smart Navigation</h3>
-                <p>
-                    Get directions using your campus locations
-                    and remembered destinations.
-                </p>
-                <button>Try Navigation →</button>
-            </div>
-
-
-            <!-- Complaint -->
-            <div class="feature-card" onclick="showComplaint()">
-                <div class="icon">📝</div>
-                <h3>Complaint Workflow</h3>
-                <p>
-                    Report campus problems and track your complaint
-                    even later.
-                </p>
-                <button>Report Problem →</button>
-            </div>
-
-
-            <!-- Daily Briefing -->
-            <div class="feature-card" onclick="showBriefing()">
-                <div class="icon">🌅</div>
-                <h3>Daily Briefing</h3>
-                <p>
-                    Get your classes, notices, complaints and
-                    mess information in one summary.
-                </p>
-                <button>Good Morning →</button>
-            </div>
-
-        </section>
-
-
-        <!-- Memory -->
-        <section class="memory-section">
-
-            <div class="memory-title">
-                🧠 CampusMate Memory
-            </div>
-
-            <div class="memory-items">
-
-                <div>
-                    <span>Hostel</span>
-                    <strong>Hostel Block A</strong>
-                </div>
-
-                <div>
-                    <span>Last Complaint</span>
-                    <strong>Water Cooler - Block C</strong>
-                </div>
-
-                <div>
-                    <span>Recent Destination</span>
-                    <strong>AI Lab</strong>
-                </div>
-
-            </div>
-
-        </section>
-
-    </main>
-
-
-    <footer>
-        CampusMate © 2026 | Context-Aware Voice Campus OS
-    </footer>
-
-    <script src="script.js"></script>
-
+<script src="script.js"></script>
 </body>
 </html>
-

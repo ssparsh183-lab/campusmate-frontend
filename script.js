@@ -1,23 +1,47 @@
-// ✅ ✅ ✅ LIVE BACKEND URL
 const BASE_URL = "https://campusmate-backend-axne.onrender.com";
 
-const responseText = document.getElementById("responseText");
-const voiceStatus = document.getElementById("voice-status");
+document.addEventListener("DOMContentLoaded", () => {
+    loadMemory();
 
-// ------------------------------
-// TEXT QUERY
-// ------------------------------
+    document.getElementById("userInput").addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            processQuery();
+        }
+    });
+});
+
+
+// ---------------- MEMORY ----------------
+
+function loadMemory() {
+    fetch(`${BASE_URL}/memory/1`)
+        .then(res => res.json())
+        .then(data => {
+            if (!data.error) {
+                document.getElementById("memory-hostel").innerText =
+                    data.hostel || "N/A";
+
+                document.getElementById("memory-complaint").innerText =
+                    data.last_complaint || "No complaints";
+
+                document.getElementById("memory-destination").innerText =
+                    data.recent_destination || "No recent location";
+            }
+        })
+        .catch(err => console.error("Memory error:", err));
+}
+
+
+// ---------------- QUERY ----------------
 
 function processQuery() {
 
     const input = document.getElementById("userInput");
     const query = input.value.trim();
-    if (query === "") return;
+    if (!query) return;
 
     const chatBox = document.getElementById("responseCard");
-
-    const defaultMsg = document.getElementById("responseText");
-    if (defaultMsg) defaultMsg.remove();
 
     const conversation = document.createElement("div");
     conversation.classList.add("conversation-block");
@@ -37,10 +61,7 @@ function processQuery() {
     fetch(`${BASE_URL}/intent`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            student_id: 1,
-            message: query
-        })
+        body: JSON.stringify({ student_id: 1, message: query })
     })
     .then(res => res.json())
     .then(data => {
@@ -50,108 +71,82 @@ function processQuery() {
         if (!data.success) {
             const errorMsg = document.createElement("p");
             errorMsg.classList.add("ai-msg");
-            errorMsg.innerHTML = "Error: " + data.error;
+            errorMsg.innerText = "Error: " + data.error;
             conversation.appendChild(errorMsg);
             return;
         }
 
-        const speakingMsg = document.createElement("p");
-        speakingMsg.classList.add("ai-msg");
-        speakingMsg.innerHTML = "🔊 CampusMate is speaking...";
-        conversation.appendChild(speakingMsg);
+        loadMemory();
 
-        speakResponse(data.message).then(() => {
+        const aiMsg = document.createElement("p");
+        aiMsg.classList.add("ai-msg");
+        aiMsg.innerHTML = "🤖 CampusMate: " + data.message;
+        conversation.appendChild(aiMsg);
 
-            conversation.removeChild(speakingMsg);
-
-            const aiMsg = document.createElement("p");
-            aiMsg.classList.add("ai-msg");
-            aiMsg.innerHTML = "🤖 CampusMate: " + data.message;
-            conversation.appendChild(aiMsg);
-
-        });
+        speakResponse(data.message);
 
     })
-    .catch(err => {
-        conversation.removeChild(thinkingMsg);
-
-        const errorMsg = document.createElement("p");
-        errorMsg.classList.add("ai-msg");
-        errorMsg.innerHTML = "Backend connection failed.";
-        conversation.appendChild(errorMsg);
-
-        console.error(err);
-    });
+    .catch(err => console.error("Backend error:", err));
 
     input.value = "";
 }
 
 
-// ------------------------------
-// DAILY BRIEFING
-// ------------------------------
-
-function showBriefing() {
-
-    fetch(`${BASE_URL}/intent`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            student_id: 1,
-            message: "Good morning"
-        })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            responseText.innerHTML = data.message;
-        } else {
-            responseText.innerHTML = "Error: " + data.error;
-        }
-    })
-    .catch(err => {
-        responseText.innerHTML = "Backend connection failed.";
-        console.error(err);
-    });
-}
-
-
-// ------------------------------
-// VOICE
-// ------------------------------
+// ---------------- SPEAK ----------------
 
 function speakResponse(text) {
+    if (!text) return;
 
-    if (!text || !text.trim()) return Promise.resolve();
-
-    return fetch(`${BASE_URL}/speak`, {
+    fetch(`${BASE_URL}/speak`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: text })
+        body: JSON.stringify({ text })
     })
-    .then(res => {
-        if (!res.ok) throw new Error("Voice generation failed");
-        return res.blob();
-    })
+    .then(res => res.blob())
     .then(blob => {
-        const audioUrl = URL.createObjectURL(blob);
-        const audio = new Audio(audioUrl);
-
-        return new Promise(resolve => {
-            audio.onended = resolve;
-            audio.play();
-        });
+        const audio = new Audio(URL.createObjectURL(blob));
+        audio.play();
     })
-    .catch(err => {
-        console.error("Voice error:", err);
-    });
+    .catch(err => console.error("Voice error:", err));
 }
 
 
-// ✅ Enter key
-document.getElementById("userInput").addEventListener("keydown", function(event) {
-    if (event.key === "Enter") {
-        event.preventDefault();
-        processQuery();
+// ---------------- VOICE INPUT ----------------
+
+function startListening() {
+
+    const voiceStatus = document.getElementById("voice-status");
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+        alert("Speech recognition only works in Google Chrome.");
+        return;
     }
-});
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-IN";
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.start();
+
+    recognition.onstart = () => {
+        voiceStatus.innerText = "🎙 Listening...";
+    };
+
+    recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById("userInput").value = transcript;
+        voiceStatus.innerText = "You said: " + transcript;
+        processQuery();
+    };
+
+    recognition.onerror = (event) => {
+        console.error(event.error);
+        voiceStatus.innerText = "Mic error";
+    };
+
+    recognition.onend = () => {
+        voiceStatus.innerText = "Tap to speak";
+    };
+}
