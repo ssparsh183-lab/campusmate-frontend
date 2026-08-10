@@ -22,7 +22,6 @@ function loadMemory() {
 
             if (!data.error) {
 
-                // ✅ Memory section
                 document.getElementById("memory-hostel").innerText =
                     data.hostel || "N/A";
 
@@ -32,19 +31,16 @@ function loadMemory() {
                 document.getElementById("memory-destination").innerText =
                     data.recent_destination || "No recent location";
 
-                // ✅ Navigation card dynamic
                 const navText = data.recent_destination
                     ? `Last visited: ${data.recent_destination}`
                     : "No recent navigation history.";
                 document.getElementById("nav-card-text").innerText = navText;
 
-                // ✅ Complaint card dynamic
                 const complaintText = data.last_complaint
                     ? `Last issue: ${data.last_complaint}`
                     : "No complaints filed yet.";
                 document.getElementById("complaint-card-text").innerText = complaintText;
 
-                // ✅ Briefing card dynamic
                 document.getElementById("briefing-card-text").innerText =
                     "Tap to get today's full campus summary.";
             }
@@ -55,7 +51,7 @@ function loadMemory() {
 
 // ---------------- QUERY ----------------
 
-function processQuery() {
+async function processQuery() {
 
     const input = document.getElementById("userInput");
     const query = input.value.trim();
@@ -78,13 +74,16 @@ function processQuery() {
     conversation.appendChild(thinkingMsg);
     chatBox.prepend(conversation);
 
-    fetch(`${BASE_URL}/intent`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ student_id: 1, message: query })
-    })
-    .then(res => res.json())
-    .then(data => {
+    input.value = "";
+
+    try {
+        const response = await fetch(`${BASE_URL}/intent`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ student_id: 1, message: query })
+        });
+
+        const data = await response.json();
 
         conversation.removeChild(thinkingMsg);
 
@@ -98,36 +97,57 @@ function processQuery() {
 
         loadMemory();
 
+        const speakingMsg = document.createElement("p");
+        speakingMsg.classList.add("ai-msg");
+        speakingMsg.innerHTML = "🔊 CampusMate is speaking...";
+        conversation.appendChild(speakingMsg);
+
+        await speakResponse(data.message);
+
+        conversation.removeChild(speakingMsg);
+
         const aiMsg = document.createElement("p");
         aiMsg.classList.add("ai-msg");
         aiMsg.innerHTML = "🤖 CampusMate: " + data.message;
         conversation.appendChild(aiMsg);
 
-        speakResponse(data.message);
-
-    })
-    .catch(err => console.error("Backend error:", err));
-
-    input.value = "";
+    } catch (err) {
+        console.error("Backend error:", err);
+    }
 }
 
 
-// ---------------- SPEAK ----------------
+// ---------------- SPEAK (SYNCED) ----------------
 
 function speakResponse(text) {
-    if (!text) return;
 
-    fetch(`${BASE_URL}/speak`, {
+    if (!text) return Promise.resolve();
+
+    return fetch(`${BASE_URL}/speak`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text })
     })
-    .then(res => res.blob())
-    .then(blob => {
-        const audio = new Audio(URL.createObjectURL(blob));
-        audio.play();
+    .then(res => {
+        if (!res.ok) throw new Error("Voice generation failed");
+        return res.blob();
     })
-    .catch(err => console.error("Voice error:", err));
+    .then(blob => {
+
+        const audio = new Audio(URL.createObjectURL(blob));
+
+        return new Promise((resolve) => {
+            audio.onended = resolve;
+            audio.play().catch(e => {
+                console.error("Audio play error:", e);
+                resolve();
+            });
+        });
+
+    })
+    .catch(err => {
+        console.error("Voice error:", err);
+    });
 }
 
 
@@ -144,6 +164,7 @@ function startListening() {
     }
 
     const recognition = new SpeechRecognition();
+
     recognition.lang = "en-IN";
     recognition.continuous = false;
     recognition.interimResults = false;
